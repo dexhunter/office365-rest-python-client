@@ -1,0 +1,52 @@
+{
+  "targets": [
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "5b7698399e7998db4f060ed7bf502c7822bf40bb",
+      "file": "office365/runtime/converters/scalars.py",
+      "function": "parse_datetime",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_converters.py::TestScalarConverters",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/parse_datetime/bench.py",
+      "baseline_median_ms": 84.4214,
+      "baseline_noise_pct": 2.575,
+      "tests_pass_on_baseline": true,
+      "notes": "Every Graph/SharePoint datetime literal walks a list of strptime formats and pays ValueError on each miss before fromisoformat. Seven-digit .NET fractions and numeric offsets, which list items and directory objects actually send, miss the first formats. The timed block is 4900 such literals. Noise is (max-min)/median across five runs of bench_cmd. Only the offline scalar-converter tests were run."
+    },
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "5b7698399e7998db4f060ed7bf502c7822bf40bb",
+      "file": "office365/runtime/converters/value.py",
+      "function": "serialize_value",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_converters.py::TestSerializeValue tests/unit/test_converters.py::TestClientValueToJson tests/unit/test_converters.py::TestClientObjectToJson tests/unit/test_serialization_contract.py",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/serialize_value/bench.py",
+      "baseline_median_ms": 9.2528,
+      "baseline_noise_pct": 0.829,
+      "tests_pass_on_baseline": true,
+      "notes": "Payload and record export send every cell through this function. Strings, ints, bools, and nulls, which dominate a $select page, still pass Enum, UUID, bytes, datetime, timedelta, and hasattr(to_json) before being returned unchanged. Checking the common scalars first removes that dispatch. The timed block is 32000 scalar cells with one V4 profile. Noise is (max-min)/median across five runs of bench_cmd. Only offline serialization tests were run."
+    },
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "5b7698399e7998db4f060ed7bf502c7822bf40bb",
+      "file": "office365/runtime/converters/records.py",
+      "function": "records_from_items",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_records_projection.py tests/unit/test_converters.py::TestIterRecords",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/records_from_items/bench.py",
+      "baseline_median_ms": 4.9414,
+      "baseline_noise_pct": 2.513,
+      "tests_pass_on_baseline": true,
+      "notes": "CSV, pandas, and migration export all project a loaded page here. With no $select the column set is rebuilt from every item key, then each row copies a dict and serialize_value runs on every cell, including values that are already JSON scalars. A page of 120 list items with 40 custom columns is the timed call. Noise is (max-min)/median across five runs of bench_cmd. Only offline record-projection tests were run."
+    },
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "5b7698399e7998db4f060ed7bf502c7822bf40bb",
+      "file": "office365/runtime/paths/builder.py",
+      "function": "ODataPathBuilder._encode_string",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_runtime_paths.py",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/encode_string/bench.py",
+      "baseline_median_ms": 2.7341,
+      "baseline_noise_pct": 1.291,
+      "tests_pass_on_baseline": true,
+      "notes": "Service-operation path literals (GetFileByServerRelativeUrl and the same encoder used for string parameters) scan each path once per special character via successive str.replace, including paths that contain none of those characters. One pass, or translate plus quote doubling, does the same escaping. The timed block is 6000 server-relative paths. Noise is (max-min)/median across five runs of bench_cmd. Only offline path tests were run; they reach this helper through build_segment and _encode_odata_value."
+    }
+  ]
+}
