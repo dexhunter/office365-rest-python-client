@@ -1,0 +1,52 @@
+{
+  "targets": [
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "47b11ef7b0299ec9568ef65cfe1019dd5b835951",
+      "file": "office365/runtime/odata/comparable.py",
+      "function": "_text",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_calendar_profile.py",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/text/bench.py",
+      "baseline_median_ms": 2.7568,
+      "baseline_noise_pct": 1.411,
+      "tests_pass_on_baseline": true,
+      "notes": "Migration digests compare an event or message body with Compare(format=\"text\"), and that rule calls this helper. A body is copied through four regular expressions (head/style/script, comments, tags, then whitespace) plus an HTML unescape. One pass can drop the same markup. The timed block is 30 HTML bodies of about 6 KB, a page of message or event bodies. Noise is (max-min)/median across five runs of bench_cmd. The offline calendar-profile tests reduce an HTML body to its text and pin the digest of that form."
+    },
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "47b11ef7b0299ec9568ef65cfe1019dd5b835951",
+      "file": "office365/runtime/query_capabilities.py",
+      "function": "referenced_properties",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_query_capabilities.py",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/referenced_properties/bench.py",
+      "baseline_median_ms": 2.3008,
+      "baseline_noise_pct": 1.682,
+      "tests_pass_on_baseline": true,
+      "notes": "filter and order_by ask this which properties an OData expression names before the request is sent. Each call copies the expression twice to blank string and datetime literals, then slices the tail of every identifier to decide whether it is a function call. One pass over the expression can classify the same tokens. The timed block is 250 filters of the shape a user or message query uses (string literals, a datetime literal, startswith/not, and/or). Noise is (max-min)/median across five runs of bench_cmd. The offline query-capability tests reach this helper through filter_violations and preference_values."
+    },
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "47b11ef7b0299ec9568ef65cfe1019dd5b835951",
+      "file": "office365/sharepoint/fields/name.py",
+      "function": "internal_field_name",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_data_pipeline.py::test_internal_field_name_sanitizes_and_avoids_reserved_titles",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/internal_field_name/bench.py",
+      "baseline_median_ms": 25.5158,
+      "baseline_noise_pct": 0.582,
+      "tests_pass_on_baseline": true,
+      "notes": "Dataframe and CSV import rename every cell key to a SharePoint internal name, and records_from_dataframe calls this once per cell rather than once per column. Each call runs a non-word regular expression, then a reserved-title check, even though a chunk repeats the same headers on all 2000 rows. A translation table, or remembering the few distinct headers, does the same sanitizing. The timed block is one SAFE_PAGE_SIZE chunk (2000 rows by 25 display names, including spaces, punctuation, and reserved titles). Noise is (max-min)/median across five runs of bench_cmd. The offline test covers sanitizing and the reserved-title suffix."
+    },
+    {
+      "upstream_repo": "vgrem/office365-rest-python-client",
+      "head_sha": "47b11ef7b0299ec9568ef65cfe1019dd5b835951",
+      "file": "office365/runtime/converters/csv_reader.py",
+      "function": "coerce_records",
+      "native_test_cmd": "uv run pytest -q tests/unit/test_data_pipeline.py::TestCsvRecords tests/unit/test_data_pipeline.py::TestImportPipeline::test_from_csv_queues_creates",
+      "bench_cmd": "taskset -c 0 uv run python osspr-intake/harness/coerce_records/bench.py",
+      "baseline_median_ms": 4.8057,
+      "baseline_noise_pct": 2.052,
+      "tests_pass_on_baseline": true,
+      "notes": "CSV and JSON import normalize every row here before the entities are queued. The header set is the same on every row, but each cell still resolves the declared type, detects a dotted key, and may split a '; '-joined collection. Resolving that plan once per header and applying it per row does the same normalization. The timed block is 600 directory users with declared columns, a passwordProfile dotted header, a businessPhones collection, and the id and @odata.type cells an export leaves on the row. Noise is (max-min)/median across five runs of bench_cmd. The offline CSV tests cover nesting, collection splitting, and stripping non-importable keys."
+    }
+  ]
+}
