@@ -110,7 +110,9 @@ def serialize_value(  # noqa: PLR0911 - one return per stored-value kind
 
 def to_snake_case(name: str) -> str:
     """Convert a camelCase property name to its snake_case Python attribute."""
-    return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
+    if type(name) is not str or not name[1:].islower():
+        name = "_".join(re.findall(r"[A-Z][^A-Z]*|[^A-Z]+", name))
+    return name.lower()
 
 
 def _unwrap_type(target: Any) -> Any:
