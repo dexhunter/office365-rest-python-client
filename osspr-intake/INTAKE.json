@@ -1,0 +1,44 @@
+[
+  {
+    "upstream_repo": "vgrem/office365-rest-python-client",
+    "head_sha": "8f55ba3a9903f426a35c2e33b977a7e2696bd91f",
+    "file": "office365/formats/text.py",
+    "function": "fold_line",
+    "native_test_cmd": "python -m pytest tests/unit/test_formats_text.py tests/unit/test_outlook_ical.py tests/unit/test_outlook_vcard.py -q --offline",
+    "bench_cmd": "python osspr-intake/harness/fold_line.py",
+    "baseline_median_ms": 80.2298,
+    "baseline_noise_pct": 1.257,
+    "tests_pass_on_baseline": true,
+    "workload": "Fold a 58KB DESCRIPTION line (meeting minutes) 25 times, the line encode() and ContactRecord.vcard() fold.",
+    "notes": "Each character is encoded to UTF-8 just to learn its octet width, after the whole line was already encoded for the 75-octet check. Folding the encoded buffer once keeps the same RFC 5545 line breaks and was about an order of magnitude faster on a line this size in a local probe."
+  },
+  {
+    "upstream_repo": "vgrem/office365-rest-python-client",
+    "head_sha": "8f55ba3a9903f426a35c2e33b977a7e2696bd91f",
+    "file": "office365/runtime/converters/value.py",
+    "function": "to_snake_case",
+    "native_test_cmd": "python -m pytest tests/unit/test_listitem_property_reads.py tests/unit/test_data_pipeline.py tests/unit/test_serialization_contract.py tests/unit/test_converters.py -q --offline",
+    "bench_cmd": "python osspr-intake/harness/to_snake_case.py",
+    "baseline_median_ms": 42.9107,
+    "baseline_noise_pct": 1.89,
+    "tests_pass_on_baseline": true,
+    "workload": "Resolve the same 15 camelCase list-column names across 5000 rows, as get_property does for undeclared site columns.",
+    "notes": "Every call runs re.sub, and a page repeats a handful of names. Caching the pure function, as internal_field_name already does, was about 20x on this page in a local probe and does not change the spelling."
+  },
+  {
+    "upstream_repo": "vgrem/office365-rest-python-client",
+    "head_sha": "8f55ba3a9903f426a35c2e33b977a7e2696bd91f",
+    "file": "office365/runtime/converters/streamers.py",
+    "function": "JsonArrayStreamWriter.write",
+    "native_test_cmd": "python -m pytest tests/unit/test_formats.py::test_streaming_json_writer_appends_pages -q --offline",
+    "bench_cmd": "python osspr-intake/harness/json_array_bytes.py",
+    "metric_kind": "output_bytes",
+    "baseline_value": 650281,
+    "baseline_noise_pct": 0.0,
+    "metric_benchmark": "python osspr-intake/harness/json_array_bytes.py",
+    "labeled_data": null,
+    "tests_pass_on_baseline": true,
+    "workload": "One streamed JSON array page of 2500 records by 22 short columns, a wide list or user export.",
+    "notes": "json.dump uses the default ', ' and ': ' separators, so about 16.5% of this page is spaces. separators=(',', ':') keeps json.loads identical, which is what the native test checks. record_to_json (open PR 1073) is a different function and was not used."
+  }
+]
