@@ -22,10 +22,9 @@ ITEM_COUNT = 80_000
 
 def _collection_path() -> ResourcePath:
     site = "contoso.sharepoint.com,11111111-1111-1111-1111-111111111111,22222222-2222-2222-2222-222222222222"
-    return ResourcePath(
-        "items",
-        ResourcePath("b9c1e4a0-7d2f-4c18-9a55-0e6f3d8b1c42", ResourcePath("lists", ResourcePath(site, ResourcePath("sites")))),
-    )
+    list_id = "b9c1e4a0-7d2f-4c18-9a55-0e6f3d8b1c42"
+    lists = ResourcePath("lists", ResourcePath(site, ResourcePath("sites")))
+    return ResourcePath("items", ResourcePath(list_id, lists))
 
 
 def main() -> None:

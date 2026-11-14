@@ -75,7 +75,7 @@ def main() -> None:
         event._changes.clear()
 
     def ingest() -> None:
-        for event, payload in zip(events, payloads):
+        for event, payload in zip(events, payloads, strict=True):
             event._properties.clear()
             event._changes.clear()
             profile.hydrate(event, payload, persist_changes=False)
